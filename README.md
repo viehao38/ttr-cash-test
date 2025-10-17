@@ -1,68 +1,125 @@
-# CodeIgniter 4 Application Starter
+# Clone project
+```bash
+git clone https://github.com/viehao38/ttr-cash-test.git
+cd ttr-cash-test
+# Sử dụng các lệnh
+composer install
 
-## What is CodeIgniter?
+cp env .env
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](https://codeigniter.com).
+Cấu hình thông tin database
+database.default.hostname = localhost
+database.default.database = my_ci4
+database.default.username = root
+database.default.password = 
+database.default.DBDriver = MySQLi
 
-This repository holds a composer-installable app starter.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
+Truy cập phpMyAdmin tạo database my_ci4
 
-More information about the plans for version 4 can be found in [CodeIgniter 4](https://forum.codeigniter.com/forumdisplay.php?fid=28) on the forums.
+# Tạo bảng
+php spark migrate
 
-You can read the [user guide](https://codeigniter.com/user_guide/)
-corresponding to the latest version of the framework.
+# data fake
+php spark db:seed EmailHistoriesSeeder
+php spark db:seed UsersSeeder
+php spark db:seed SystemSettingsSeeder
 
-## Installation & updates
+php spark serve
 
-`composer create-project codeigniter4/appstarter` then `composer update` whenever
-there is a new release of the framework.
+# Cài thư viện JWT
+composer require firebase/php-jwt
 
-When updating, check the release notes to see if there are any changes you might need to apply
-to your `app` folder. The affected files can be copied or merged from
-`vendor/codeigniter4/framework/app`.
+# Chạy serve
+php spark serve
 
-## Setup
 
-Copy `env` to `.env` and tailor for your app, specifically the baseURL
-and any database settings.
+Vào postman tạo 1 colection chọn phương thức Post
+lấy email trong database bảng User dữ liệu fake đã tạo trước đó
+Mất khẩu mặc định 123456
+http://localhost:8080/login/token
+{
+"email": "email@gmail.com",
+"password": "123456" 
+}
 
-## Important Change with index.php
+# qua tab headers gắn token đã tạo vào value 
 
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
+key : Authorization
+value: gắn token đã tạo khi login
 
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
+đăng nhập vs role admin là 1
 
-**Please** read the user guide for a better explanation of how CI4 works!
+# system-settings
 
-## Repository Management
+get: http://localhost:8080/admin/system-settings
 
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
+chú ý Post phần headers thêm 
+key : Content-Type
+value: application/json
 
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
+post:
+http://localhost:8080/admin/system-settings
+{
+"meta_key": "setting_4",
+"meta_value": "haoviet",
+"label": "GPA",
+"field_type": "select",
+"options": "ok"
+}
 
-## Server Requirements
+chú ý Put phần headers thêm
+key : Content-Type
+value: application/json
 
-PHP version 8.1 or higher is required, with the following extensions installed:
+put:
+http://localhost:8080/admin/system-settings/3
+{
+"meta_key": "setting_8",
+"meta_value": "value_11",
+"label": "lablala",
+"field_type": "select",
+"options": "no"
+}
 
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
+delete:
+http://localhost:8080/admin/system-settings/2
 
-> [!WARNING]
-> - The end of life date for PHP 7.4 was November 28, 2022.
-> - The end of life date for PHP 8.0 was November 26, 2023.
-> - If you are still using PHP 7.4 or 8.0, you should upgrade immediately.
-> - The end of life date for PHP 8.1 will be December 31, 2025.
 
-Additionally, make sure that the following extensions are enabled in your PHP:
 
-- json (enabled by default - don't turn it off)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
+# email-histories
+đăng nhập vs role user là 0 mới dc phép xem phần này
+lấy token làm như systems_setting
+
+get: http://localhost:8080/user/email-histories/
+
+post:
+http://localhost:8080/user/email-histories/
+{
+"code": "EMAIL123456",
+"recipient": "nguyen@example.com",
+"cc": "abc@example.com",
+"bcc": "xyz@example.com",
+"subject": "Test email",
+"body": "Nội dung email thử nghiệm",
+"error_message": null,
+"status": 1,
+"sent_at": "2025-10-14 10:30:00",
+"resent_times": 0
+}
+
+put:
+http://localhost:8080/user/email-histories/3
+{
+"code": "EMAIL123456",
+"recipient": "nguyenhao@example.com",
+"cc": null,
+"bcc": "xyz@example.com",
+"subject": "Test email",
+"body": "Nội dung email thử nghiệm",
+"error_message": null,
+"status": 1,
+"sent_at": "2025-10-14 10:30:00",
+"resent_times": 222
+}
+
+delete: http://localhost:8080/user/email-histories/3
